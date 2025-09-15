@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Cyber Awareness Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .choice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .category-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .category-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .phishing-img {
+            border: 4px solid transparent;
+            transition: border-color 0.3s, transform 0.2s;
+            cursor: pointer;
+        }
+        .phishing-img:hover {
+            transform: scale(1.03);
+        }
+        /* Modal styles */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-backdrop.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+             from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 relative overflow-hidden">
+
+        <!-- Onboarding Screen -->
+        <div id="onboarding-screen" class="screen active text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Cyber Safe!</h1>
+            <p class="text-gray-600 mb-6">Learn to stay safe online through fun challenges.</p>
+            <img src="https://placehold.co/300x200/E0F2FE/3B82F6?text=Be+Cyber+Smart!" alt="Cyber Security Illustration" class="mx-auto rounded-lg mb-6">
+            <button onclick="startGame()" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Start Learning</button>
+        </div>
+
+        <!-- Category Selection Screen -->
+        <div id="category-screen" class="screen">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Choose a Topic</h2>
+                    <p class="text-sm text-gray-500">Level: <span id="level">1</span> | XP: <span id="xp">0</span></p>
+                </div>
+                 <div class="text-right">
+                    <span id="lives-display" class="font-bold text-red-500 text-2xl"></span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div onclick="selectCategory('phishing')" class="category-card bg-rose-100 p-4 rounded-lg text-center cursor-pointer">
+                    <div class="text-4xl">🎣</div>
+                    <h3 class="font-semibold mt-2 text-rose-800">Phishing</h3>
+                </div>
+                <div onclick="selectCategory('passwords')" class="category-card bg-sky-100 p-4 rounded-lg text-center cursor-pointer">
+                    <div class="text-4xl">🔑</div>
+                    <h3 class="font-semibold mt-2 text-sky-800">Passwords</h3>
+                </div>
+                <div onclick="selectCategory('social_engineering')" class="category-card bg-amber-100 p-4 rounded-lg text-center cursor-pointer">
+                     <div class="text-4xl">🎭</div>
+                    <h3 class="font-semibold mt-2 text-amber-800">Social Engineering</h3>
+                </div>
+                 <div onclick="selectCategory('phishing_simulator')" class="category-card bg-indigo-100 p-4 rounded-lg text-center cursor-pointer">
+                    <div class="text-4xl">✉️</div>
+                    <h3 class="font-semibold mt-2 text-indigo-800">Phishing Simulator</h3>
+                </div>
+            </div>
+            <button onclick="startAiChallenge()" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity">✨ AI Challenge</button>
+            <button onclick="showLeaderboard()" class="mt-4 w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Leaderboard</button>
+        </div>
+
+        <!-- AI Challenge Screen -->
+        <div id="ai-challenge-screen" class="screen">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">✨ AI Generated Scenario</h2>
+            <p class="text-gray-600 mb-4">Read the scenario below. Is it safe or a threat?</p>
+            <div id="ai-scenario-container" class="bg-gray-50 p-4 rounded-lg mb-4 min-h-[150px] overflow-y-auto">
+                <p id="ai-scenario-text" class="text-gray-700 whitespace-pre-wrap"></p>
+            </div>
+            <div class="flex gap-4">
+                 <button onclick="judgeAiScenario('threat')" class="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-colors">Threat</button>
+                <button onclick="judgeAiScenario('safe')" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors">Safe</button>
+            </div>
+             <button onclick="goToCategories()" class="mt-4 w-full text-gray-600 font-semibold py-2">Back to Categories</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="flex justify-between items-center mb-4">
+                <span id="question-counter" class="text-sm font-medium text-gray-500"></span>
+                <span id="quiz-timer" class="text-sm font-bold text-blue-600">15s</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-6 min-h-[80px]"></h2>
+            <div id="choices-container" class="space-y-3"></div>
+        </div>
+        
+        <!-- Phishing Simulator Screen -->
+        <div id="phishing-simulator-screen" class="screen">
+             <h2 class="text-2xl font-bold text-gray-800 mb-2">Phishing or Safe?</h2>
+             <p class="text-gray-600 mb-4">Click the image that looks like a legitimate, safe message.</p>
+             <div id="phishing-options" class="grid grid-cols-1 gap-4">
+                 <!-- Phishing images will be loaded here -->
+             </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen text-center">
+            <h2 id="result-title" class="text-3xl font-bold mb-2">Round Complete!</h2>
+            <p id="result-message" class="text-gray-600 mb-4"></p>
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <p class="text-lg font-semibold">XP Gained: <span id="xp-gained" class="text-blue-600"></span></p>
+                <p>Total XP: <span id="total-xp"></span></p>
+            </div>
+            <div id="explanation-container" class="text-left bg-gray-50 p-4 rounded-lg max-h-40 overflow-y-auto">
+                <h3 class="font-bold mb-2">Review:</h3>
+                <div id="explanations"></div>
+            </div>
+            <button onclick="nextRound()" class="mt-6 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Continue</button>
+        </div>
+        
+        <!-- Leaderboard Screen -->
+        <div id="leaderboard-screen" class="screen">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Leaderboard</h2>
+            <ul id="leaderboard-list" class="space-y-2"></ul>
+            <button onclick="goToCategories()" class="mt-6 w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Back to Categories</button>
+        </div>
+
+    </div>
+
+    <!-- AI Explanation Modal -->
+    <div id="ai-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">✨ AI Explanation</h3>
+                <button onclick="closeAiModal()" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div id="ai-modal-body" class="text-gray-600">
+                <!-- AI content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
+
+    <script>
+        // --- Game State & Config ---
+        const state = {
+            currentScreen: 'onboarding-screen',
+            score: 0,
+            level: 1,
+            lives: 3,
+            currentCategory: null,
+            currentQuestionIndex: 0,
+            questions: [],
+            userAnswers: [],
+            timeLeft: 15,
+            timer: null,
+            currentScenario: null,
+            phishingScenarios: [
+                { id: 'p1', safe: 'https://placehold.co/400x150/D1FAE5/10B981?text=From%3A+support@yourbank.com', phish: 'https://placehold.co/400x150/FEE2E2/EF4444?text=From%3A+support@your-bank-security.com', explanation: 'The phishing email uses a suspicious subdomain ("your-bank-security.com") to appear legitimate. Always check the sender\'s domain.' },
+                { id: 'p2', safe: 'https://placehold.co/400x150/D1FAE5/10B981?text=Login%3A+official-site.com/login', phish: 'https://placehold.co/400x150/FEE2E2/EF4444?text=Login%3A+official-site.login-now.com', explanation: 'The phishing link uses the real domain as a subdomain of a malicious one ("login-now.com"). Hover over links before clicking!' },
+                { id: 'p3', safe: 'https://placehold.co/400x150/D1FAE5/10B981?text=From%3A+paypal.com', phish: 'https://placehold.co/400x150/FEE2E2/EF4444?text=From%3A+paypai.com', explanation: 'A common trick is to use a typo in the domain name ("paypai.com" instead of "paypal.com"). Always double-check!' }
+            ],
+            aiScenario: { text: '', answer: '' }
+        };
+        let allQuestions = [];
+
+        // --- DOM Elements ---
+        const screens = document.querySelectorAll('.screen');
+        const levelEl = document.getElementById('level');
+        const xpEl = document.getElementById('xp');
+        const livesDisplay = document.getElementById('lives-display');
+        const aiModal = document.getElementById('ai-modal');
+        const aiModalBody = document.getElementById('ai-modal-body');
+
+        // --- Initialization ---
+        window.onload = async () => {
+            await fetchQuestions();
+            loadProgress();
+            showScreen(state.currentScreen);
+        };
+
+        async function fetchQuestions() {
+            try {
+                const response = await fetch('questions.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                allQuestions = await response.json();
+            } catch (error) {
+                console.error("Could not load questions.json:", error);
+                allQuestions = [
+                  { "id": "q1", "category": "phishing", "difficulty": "easy", "question": "An email asks you to click a link to verify your account due to 'suspicious activity'. What should you do?", "choices": ["Click the link", "Ignore it", "Go to the official website directly"], "answer": 2, "explanation": "Never click links in suspicious emails. Always navigate to the official website yourself to check for any alerts." },
+                  { "id": "q2", "category": "passwords", "question": "Which is the strongest password?", "choices": ["Password123!", "MyDogFido", "tree-boat-correct-staple"], "answer": 2, "explanation": "Long passphrases of random words are much stronger and easier to remember than short, complex passwords."}
+                ];
+            }
+        }
+        
+        // --- Gemini API Integration ---
+        const API_KEY = ""; // In a real app, use a secure way to handle this. For this environment, leave it empty.
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        
+        async function callGeminiAPI(prompt, systemInstruction) {
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    systemInstruction: { parts: [{ text: systemInstruction }] }
+                };
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                return "Sorry, I couldn't get a response from the AI. Please try again later.";
+            }
+        }
+
+        async function getDeeperExplanation(question, explanation) {
+            aiModalBody.innerHTML = '<p>Getting a deeper explanation from the AI...</p>';
+            aiModal.classList.add('active');
+            
+            const systemPrompt = "You are a friendly and helpful cybersecurity tutor. Explain cybersecurity concepts in a simple, clear way using analogies that a high school student can understand. Keep the explanation to 2-4 sentences.";
+            const userPrompt = `The user answered a question incorrectly. The question was: "${question}". The original explanation is: "${explanation}". Please provide a deeper, more relatable explanation or analogy to help them understand this concept better.`;
+
+            const aiResponse = await callGeminiAPI(userPrompt, systemPrompt);
+            aiModalBody.innerHTML = `<p>${aiResponse}</p>`;
+        }
+        
+        async function startAiChallenge() {
+            showScreen('ai-challenge-screen');
+            document.getElementById('ai-scenario-text').textContent = 'Generating a new scenario...';
+            
+            const scenarioType = Math.random() < 0.5 ? "phishing email" : "social engineering text message";
+            const systemPrompt = "You are a creative assistant designing educational cybersecurity scenarios. Create a short, realistic-sounding scenario for a student to analyze. The scenario must contain subtle red flags that indicate it's a threat. The scenario should be a text message or email.";
+            const userPrompt = `Create a short, deceptive ${scenarioType} scenario. The scenario MUST be a threat. Do not reveal the answer or explain the red flags. Just provide the scenario text.`;
+            
+            const aiResponse = await callGeminiAPI(userPrompt, systemPrompt);
+            state.aiScenario.text = aiResponse;
+            state.aiScenario.answer = 'threat'; // We are explicitly asking for a threat scenario
+            document.getElementById('ai-scenario-text').textContent = state.aiScenario.text;
+        }
+
+        function judgeAiScenario(userChoice) {
+            const isCorrect = userChoice === state.aiScenario.answer;
+            endPhishingSimulator(isCorrect, true); // Use a flag for AI scenario
+        }
+        
+        function closeAiModal() {
+            aiModal.classList.remove('active');
+        }
+
+        // --- Screen Management ---
+        function showScreen(screenId) {
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            state.currentScreen = screenId;
+        }
+
+        function startGame() {
+            showScreen('category-screen');
+        }
+        
+        function goToCategories() {
+            showScreen('category-screen');
+        }
+
+        function selectCategory(category) {
+            state.currentCategory = category;
+            state.currentQuestionIndex = 0;
+            state.userAnswers = [];
+            state.lives = 3;
+            updateLivesDisplay();
+
+            if (category === 'phishing_simulator') {
+                startPhishingSimulator();
+            } else {
+                state.questions = allQuestions.filter(q => q.category === category).sort(() => 0.5 - Math.random()).slice(0, 5);
+                if(state.questions.length === 0) {
+                    alert("No questions available for this category!");
+                    return;
+                }
+                showScreen('quiz-screen');
+                displayQuestion();
+            }
+        }
+        
+        function nextRound() {
+            showScreen('category-screen');
+        }
+
+        // --- Quiz Logic ---
+        function displayQuestion() {
+            if (state.currentQuestionIndex >= state.questions.length || state.lives <= 0) {
+                endQuiz();
+                return;
+            }
+
+            const question = state.questions[state.currentQuestionIndex];
+            document.getElementById('question-text').textContent = question.question;
+            const choicesContainer = document.getElementById('choices-container');
+            choicesContainer.innerHTML = '';
+
+            question.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.className = 'w-full text-left p-4 bg-gray-100 rounded-lg choice-btn transition';
+                button.onclick = () => selectAnswer(index, button);
+                choicesContainer.appendChild(button);
+            });
+            
+            updateProgressBar();
+            startTimer();
+        }
+        
+        function updateProgressBar() {
+            const progress = (state.currentQuestionIndex / state.questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('question-counter').textContent = `Question ${state.currentQuestionIndex + 1} of ${state.questions.length}`;
+        }
+
+        function selectAnswer(selectedIndex, button) {
+            clearInterval(state.timer);
+            const question = state.questions[state.currentQuestionIndex];
+            const isCorrect = selectedIndex === question.answer;
+
+            state.userAnswers.push({ question: question, isCorrect });
+
+            if (isCorrect) {
+                button.classList.add('bg-green-500', 'text-white');
+                let points = 10 + (state.timeLeft > 10 ? 5 : 0); // Speed bonus
+                updateScore(points);
+            } else {
+                button.classList.add('bg-red-500', 'text-white');
+                state.lives--;
+                updateLivesDisplay();
+                updateScore(-2); // Penalty
+            }
+
+            document.querySelectorAll('#choices-container button').forEach(btn => btn.disabled = true);
+
+            setTimeout(() => {
+                state.currentQuestionIndex++;
+                displayQuestion();
+            }, 1200);
+        }
+        
+        function startTimer() {
+            state.timeLeft = 15;
+            const timerEl = document.getElementById('quiz-timer');
+            timerEl.textContent = `${state.timeLeft}s`;
+            timerEl.className = 'text-sm font-bold text-blue-600';
+
+            state.timer = setInterval(() => {
+                state.timeLeft--;
+                timerEl.textContent = `${state.timeLeft}s`;
+                if (state.timeLeft < 6) timerEl.className = 'text-sm font-bold text-red-500';
+                if (state.timeLeft <= 0) timeUp();
+            }, 1000);
+        }
+
+        function timeUp() {
+            clearInterval(state.timer);
+            const question = state.questions[state.currentQuestionIndex];
+            state.userAnswers.push({ question: question, isCorrect: false });
+            state.lives--;
+            updateLivesDisplay();
+            updateScore(-2);
+            state.currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function endQuiz() {
+            clearInterval(state.timer);
+            let xpGained = 0;
+            state.userAnswers.forEach(ans => {
+                xpGained += ans.isCorrect ? 10 : -2;
+            });
+
+            showScreen('result-screen');
+            const correctAnswers = state.userAnswers.filter(a => a.isCorrect).length;
+            
+            document.getElementById('result-title').textContent = state.lives <= 0 ? "Game Over!" : "Round Complete!";
+            document.getElementById('result-message').textContent = `You got ${correctAnswers} out of ${state.userAnswers.length} correct.`;
+            document.getElementById('xp-gained').textContent = `${xpGained > 0 ? '+': ''}${xpGained}`;
+            document.getElementById('total-xp').textContent = state.score;
+
+            const explanationsDiv = document.getElementById('explanations');
+            explanationsDiv.innerHTML = '';
+            state.userAnswers.forEach(answer => {
+                const p = document.createElement('div');
+                p.className = `mb-2 p-2 rounded ${answer.isCorrect ? 'bg-green-100' : 'bg-red-100'}`;
+                
+                let html = `<strong class="font-semibold">${answer.isCorrect ? 'Correct' : 'Incorrect'}:</strong> ${answer.question.explanation}`;
+                if (!answer.isCorrect) {
+                     html += `<button onclick='getDeeperExplanation("${answer.question.question}", "${answer.question.explanation}")' class="ml-2 text-blue-600 font-semibold text-sm hover:underline">Explain Deeper ✨</button>`;
+                }
+                p.innerHTML = html;
+                explanationsDiv.appendChild(p);
+            });
+            saveProgress();
+        }
+        
+        // --- Phishing Simulator Logic ---
+        function startPhishingSimulator() {
+            showScreen('phishing-simulator-screen');
+            const scenario = state.phishingScenarios[Math.floor(Math.random() * state.phishingScenarios.length)];
+            state.currentScenario = scenario;
+            
+            const optionsContainer = document.getElementById('phishing-options');
+            optionsContainer.innerHTML = '';
+            
+            const options = [
+                { type: 'safe', src: scenario.safe },
+                { type: 'phish', src: scenario.phish }
+            ].sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const img = document.createElement('img');
+                img.src = opt.src;
+                img.alt = `${opt.type} email example`;
+                img.className = 'phishing-img rounded-lg';
+                img.onclick = () => selectPhishingOption(opt.type, img);
+                optionsContainer.appendChild(img);
+            });
+        }
+
+        function selectPhishingOption(type, imgElement) {
+            const isCorrect = type === 'safe';
+            
+            if (isCorrect) {
+                imgElement.style.borderColor = '#10B981'; // Green
+                updateScore(25);
+            } else {
+                imgElement.style.borderColor = '#EF4444'; // Red
+                state.lives--;
+                updateLivesDisplay();
+                updateScore(-5);
+            }
+            
+            document.querySelectorAll('#phishing-options img').forEach(img => img.onclick = null);
+            
+            setTimeout(() => {
+                endPhishingSimulator(isCorrect);
+            }, 1500);
+        }
+
+        function endPhishingSimulator(isCorrect, isAiChallenge = false) {
+            showScreen('result-screen');
+            const xpGained = isCorrect ? 25 : -5;
+
+            document.getElementById('result-title').textContent = isAiChallenge ? "AI Challenge Complete!" : "Simulator Complete!";
+            document.getElementById('result-message').textContent = isCorrect ? "Great job! You made the right call." : "That was a threat!";
+            document.getElementById('xp-gained').textContent = `${xpGained > 0 ? '+': ''}${xpGained}`;
+            document.getElementById('total-xp').textContent = state.score;
+
+            const explanationsDiv = document.getElementById('explanations');
+            if (isAiChallenge) {
+                explanationsDiv.innerHTML = `<p class="mb-2 p-2 rounded ${isCorrect ? 'bg-green-100' : 'bg-red-100'}">AI-generated scenarios are designed to mimic real-world threats to test your awareness.</p>`;
+            } else {
+                 explanationsDiv.innerHTML = `<p class="mb-2 p-2 rounded ${isCorrect ? 'bg-green-100' : 'bg-red-100'}">${state.currentScenario.explanation}</p>`;
+            }
+            
+            saveProgress();
+        }
+
+        // --- Scoring & Progress ---
+        function updateScore(points) {
+            state.score += points;
+            if (state.score < 0) state.score = 0;
+            const oldLevel = state.level;
+            state.level = Math.floor(state.score / 100) + 1;
+            
+            if(state.level > oldLevel) {
+                triggerConfetti();
+            }
+            
+            updateHeader();
+        }
+
+        function updateHeader() {
+            xpEl.textContent = state.score;
+            levelEl.textContent = state.level;
+        }
+
+        function updateLivesDisplay() {
+            livesDisplay.textContent = '❤️'.repeat(state.lives);
+        }
+
+        function saveProgress() {
+            const progress = { score: state.score, level: state.level };
+            localStorage.setItem('cyberGameProgress', JSON.stringify(progress));
+            
+            let leaderboard = JSON.parse(localStorage.getItem('cyberGameLeaderboard')) || [];
+            const playerName = "Player 1"; 
+            const playerIndex = leaderboard.findIndex(p => p.name === playerName);
+            if(playerIndex > -1) {
+                leaderboard[playerIndex].score = Math.max(leaderboard[playerIndex].score, state.score);
+            } else {
+                leaderboard.push({name: playerName, score: state.score});
+            }
+            leaderboard.sort((a,b) => b.score - a.score);
+            localStorage.setItem('cyberGameLeaderboard', JSON.stringify(leaderboard.slice(0, 5)));
+        }
+
+        function loadProgress() {
+            const progress = JSON.parse(localStorage.getItem('cyberGameProgress'));
+            if (progress) {
+                state.score = progress.score;
+                state.level = progress.level;
+            }
+            updateHeader();
+        }
+
+        // --- Leaderboard ---
+        function showLeaderboard() {
+            showScreen('leaderboard-screen');
+            const leaderboard = JSON.parse(localStorage.getItem('cyberGameLeaderboard')) || [];
+            const listEl = document.getElementById('leaderboard-list');
+            listEl.innerHTML = '';
+            if(leaderboard.length === 0) {
+                 listEl.innerHTML = '<li class="text-center text-gray-500">No scores yet. Play a round!</li>';
+                 return;
+            }
+            leaderboard.forEach((player, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3 rounded-lg bg-gray-50';
+                li.innerHTML = `
+                    <span class="font-bold">${index + 1}. ${player.name}</span>
+                    <span class="text-blue-600 font-semibold">${player.score} XP</span>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+        
+        // --- Confetti Effect ---
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let confetti = [];
+            const confettiCount = 200;
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+
+            for (let i = 0; i < confettiCount; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 5 + 2,
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 360,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5
+                });
+            }
+
+            function animateConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetti.forEach((p, i) => {
+                    p.y += p.speed;
+                    p.angle += p.tilt;
+                    if (p.y > canvas.height) {
+                        confetti.splice(i, 1);
+                    } else {
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.angle * Math.PI / 180);
+                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                        ctx.restore();
+                    }
+                });
+                if (confetti.length > 0) {
+                    requestAnimationFrame(animateConfetti);
+                }
+            }
+            animateConfetti();
+        }
+    </script>
+</body>
+</html>
+

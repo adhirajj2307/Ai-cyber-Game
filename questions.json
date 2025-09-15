@@ -1,0 +1,83 @@
+[
+{
+"id": "ph1",
+"category": "phishing",
+"difficulty": "easy",
+"question": "You receive an email with a generic greeting like 'Dear Valued Customer'. Is this a potential sign of phishing?",
+"choices": ["No, it's normal", "Yes, it could be a warning sign"],
+"answer": 1,
+"explanation": "Legitimate companies usually address you by your name. Generic greetings are a common red flag for phishing attempts."
+},
+{
+"id": "ph2",
+"category": "phishing",
+"difficulty": "easy",
+"question": "An email from 'Netflix' says your account is suspended and you must click a link to update your payment details. What's the safest action?",
+"choices": ["Click the link and enter your details", "Open a new tab and go to Netflix.com yourself", "Reply with your card number"],
+"answer": 1,
+"explanation": "Never trust links in unexpected emails. Always go directly to the official website to check your account status."
+},
+{
+"id": "ph3",
+"category": "phishing",
+"difficulty": "medium",
+"question": "The sender's email address is 'support@microsoft.https://www.google.com/search?q=security-center.com'. Is this a legitimate Microsoft email?",
+"choices": ["Yes, it says Microsoft", "No, it's likely a phishing attempt"],
+"answer": 1,
+"explanation": "This is a subdomain trick. The real domain is 'https://www.google.com/search?q=security-center.com', not 'microsoft.com'. Scammers use this to look official."
+},
+{
+"id": "pw1",
+"category": "passwords",
+"difficulty": "easy",
+"question": "Which of the following is the best practice for passwords?",
+"choices": ["Use the same password everywhere", "Use a unique, complex password for each account", "Write passwords on a sticky note"],
+"answer": 1,
+"explanation": "Using a unique password for each account prevents a data breach on one site from compromising your other accounts."
+},
+{
+"id": "pw2",
+"category": "passwords",
+"difficulty": "easy",
+"question": "What is Two-Factor Authentication (2FA)?",
+"choices": ["Two different passwords", "A password and a second code from another device", "Answering two security questions"],
+"answer": 1,
+"explanation": "2FA adds a second layer of security by requiring a code from your phone or another device, in addition to your password."
+},
+{
+"id": "pw3",
+"category": "passwords",
+"difficulty": "medium",
+"question": "Which password is the strongest?",
+"choices": ["Tr0ub4dor&3", "correct horse battery staple", "MyPassword123"],
+"answer": 1,
+"explanation": "Long passphrases made of random words are significantly stronger and harder to crack than shorter, more complex passwords."
+},
+{
+"id": "se1",
+"category": "social_engineering",
+"difficulty": "easy",
+"question": "A person you don't know messages you online and asks for your home address to send you a 'prize'. Should you give it to them?",
+"choices": ["Yes, it's a prize!", "No, never share personal information with strangers"],
+"answer": 1,
+"explanation": "Never share sensitive personal information like your address or phone number with people you don't know and trust."
+},
+{
+"id": "se2",
+"category": "social_engineering",
+"difficulty": "medium",
+"question": "Someone calls claiming to be from tech support, saying your computer is infected and they need remote access to fix it. This is known as a:",
+"choices": ["Vishing attack", "Smishing attack", "Tailgating attack"],
+"answer": 0,
+"explanation": "This is a common 'vishing' (voice phishing) scam. Legitimate tech support will never call you unsolicited to ask for remote access."
+},
+{
+"id": "se3",
+"category": "social_engineering",
+"difficulty": "hard",
+"question": "A friend posts a fun quiz on social media: 'Your rockstar name is your first pet's name and the street you grew up on.' Why is this risky?",
+"choices": ["It's not risky at all", "This data is often used for security questions"],
+"answer": 1,
+"explanation": "These seemingly harmless quizzes are a form of social engineering to gather answers to common security questions used for password recovery."
+}
+]
